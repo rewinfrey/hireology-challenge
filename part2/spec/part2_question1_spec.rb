@@ -9,6 +9,8 @@ class ParseStrategy
     }
   end
 
+  private
+
   def parse_feature(input_string)
     /[A-Z]+\s[A-Z]+\s\-\s\d+/.match(input_string).to_s
   end
@@ -26,21 +28,6 @@ describe 'part2_question1' do
   context 'ParseStrategy' do
     subject { ParseStrategy.new }
     let(:example) { "$5.00 TXT MESSAGING - 250 09/29 - 10/28 4.99" }
-
-    context 'parsing' do
-
-      it 'parses the price found at the end of an input string' do
-        subject.parse_price(example).should == 4.99
-      end
-
-      it 'parses the date range from the input string' do
-        subject.parse_date_range(example).should == "09/29 - 10/28"
-      end
-
-      it 'parses the feature from the input string' do
-        subject.parse_feature(example).should == "TXT MESSAGING - 250"
-      end
-    end
 
     context '#execute' do
       it 'returns a hash containing the feature, date_range and price of the input string' do
