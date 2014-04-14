@@ -5,6 +5,7 @@ describe Entities::User do
   let(:user_entity_options) do
     {
       id: 1,
+      name: "Test User",
     }
   end
 
@@ -12,5 +13,9 @@ describe Entities::User do
 
   it 'has an id' do
     subject.id.should == 1
+  end
+
+  it 'has a name' do
+    subject.name.should == "Test User"
   end
 end
