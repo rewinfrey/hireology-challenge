@@ -1,7 +1,8 @@
 module Entities
   class User < Struct.new(
                            :id,
-                           :name
+                           :name,
+                           :organizations
                          )
 
     def initialize(from_hash)
