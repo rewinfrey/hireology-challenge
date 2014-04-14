@@ -2,7 +2,8 @@ module Entities
   class User < Struct.new(
                            :id,
                            :name,
-                           :organizations
+                           :organizations,
+                           :roles
                          )
 
     def initialize(from_hash)

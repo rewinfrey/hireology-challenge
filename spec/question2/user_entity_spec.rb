@@ -11,11 +11,21 @@ describe Entities::User do
     ]
   end
 
+  let(:roles) do
+    [
+      double(:role1, id:1, user_id: 1, organizations_id: 1, role: "User"),
+      double(:role2, id:2, user_id: 1, organizations_id: 2, role: "Admin"),
+      double(:role3, id:3, user_id: 1, organizations_id: 3, role: "Admin"),
+      double(:role4, id:4, user_id: 1, organizations_id: 4, role: "Denied")
+    ]
+  end
+
   let(:user_entity_options) do
     {
       id: 1,
       name: "Test User",
-      organizations: organizations
+      organizations: organizations,
+      roles: roles
     }
   end
 
@@ -31,5 +41,9 @@ describe Entities::User do
 
   it 'has organizations' do
     subject.organizations.should == organizations
+  end
+
+  it 'has roles' do
+    subject.roles.should == roles
   end
 end
