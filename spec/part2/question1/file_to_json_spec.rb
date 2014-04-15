@@ -13,7 +13,8 @@ describe FileToJson do
 
   context '#execute' do
     it 'applies the parsing strategy for every line in the input file and outputs as JSON' do
-      temp_file = File.open("test", "w+")
+      file_name = "test"
+      temp_file = File.open(file_name, "w+")
       2.times { temp_file.write("#{example}\n") }
       temp_file.flush
 
@@ -30,7 +31,7 @@ describe FileToJson do
         "\"price\": 4.99\n" +
         "}\n"
 
-      File.delete("test")
+      File.delete(file_name)
     end
   end
 end
