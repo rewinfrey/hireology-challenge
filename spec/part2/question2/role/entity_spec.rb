@@ -1,7 +1,7 @@
 require 'spec_helper'
-require 'part2/question2/entities/role'
+require 'part2/question2/role/entity'
 
-describe Entities::Role do
+describe Role::Entity do
   let(:role_entity_options) do
     {
       id: 1,

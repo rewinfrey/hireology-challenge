@@ -1,7 +1,7 @@
 require 'spec_helper'
-require 'part2/question2/entities/organization'
+require 'part2/question2/organization/entity'
 
-describe Entities::Organization do
+describe Organization::Entity do
   let(:organization_entity_options) do
     {
       id: 1,

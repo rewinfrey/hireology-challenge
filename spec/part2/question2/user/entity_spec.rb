@@ -1,7 +1,7 @@
 require 'spec_helper'
-require 'part2/question2/entities/user'
+require 'part2/question2/user/entity'
 
-describe Entities::User do
+describe User::Entity do
   let(:organizations) do
     [
       double(:root_organization, id: 0, name: "Root Organization", parent_id: 0, children: [1]),
