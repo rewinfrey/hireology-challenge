@@ -1,6 +1,6 @@
-module Models
+module Organization
   module Memory
-    class Organization
+    class Model
       class ChildCannotBeParentError < StandardError; end
       class OrganizationAlreadyExistsError < StandardError; end
 

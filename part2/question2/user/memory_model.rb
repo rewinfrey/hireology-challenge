@@ -1,6 +1,6 @@
-module Models
+module User
   module Memory
-    class User
+    class Model
       class UserAlreadyExistsError < StandardError; end
 
       class << self
@@ -20,6 +20,10 @@ module Models
 
         def find_by_id(user_id)
           collection[user_id]
+        end
+
+        def find_by_organization_id(org_id)
+          all.select { |user| user[:organizations].include? org_id }
         end
 
         def organizations_for(user_id)

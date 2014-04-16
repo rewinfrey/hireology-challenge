@@ -1,7 +1,7 @@
 require 'spec_helper'
-require 'part2/question2/models/memory/user'
+require 'part2/question2/user/memory_model'
 
-describe Models::Memory::User do
+describe User::Memory::Model do
   subject { described_class }
 
   let(:user) do
@@ -99,6 +99,15 @@ describe Models::Memory::User do
       test_user = subject.create(user.merge(roles: role_ids))
 
       subject.roles_for(test_user[:id]).should == role_ids
+    end
+
+    it 'finds users by organization id' do
+      user1 = subject.create(user.merge(organizations: [1]))
+      user2 = subject.create(user.merge(organizations: [1]))
+      user3 = subject.create(user.merge(organizations: [2]))
+
+      subject.find_by_organization_id(1) =~ [user1, user2]
+      subject.find_by_organization_id(1).should_not include user3
     end
   end
 

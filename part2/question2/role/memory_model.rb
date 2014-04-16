@@ -1,6 +1,6 @@
-module Models
+module Role
   module Memory
-    class Role
+    class Model
       class InvalidRoleTypeError < StandardError; end
 
       ADMIN  = "Admin"

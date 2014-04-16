@@ -1,7 +1,7 @@
 require 'spec_helper'
-require 'part2/question2/models/memory/role'
+require 'part2/question2/role/memory_model'
 
-describe Models::Memory::Role do
+describe Role::Memory::Model do
   subject { described_class }
 
   let(:valid_role_types) { [subject::ADMIN, subject::USER, subject::DENIED] }

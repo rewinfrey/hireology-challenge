@@ -1,7 +1,7 @@
 require 'spec_helper'
-require 'part2/question2/models/memory/organization'
+require 'part2/question2/organization/memory_model'
 
-describe Models::Memory::Organization do
+describe Organization::Memory::Model do
   subject { described_class }
 
   let(:org) {{ name: "Test Organization" }}
