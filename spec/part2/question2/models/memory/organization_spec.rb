@@ -125,4 +125,12 @@ describe Models::Memory::Organization do
       subject.all.first[:name].should == "Root"
     end
   end
+
+  context 'find' do
+    it 'finds an organization by id' do
+      test_org1 = subject.create(org)
+
+      subject.find_by_id(test_org1[:id]).should == test_org1
+    end
+  end
 end
