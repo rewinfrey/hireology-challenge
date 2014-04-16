@@ -1,11 +1,11 @@
 require 'spec_helper'
-require 'part2/question2/entities/user'
-require 'part2/question2/models/memory/user'
-require 'part2/question2/repositories/user'
+require 'part2/question2/user/entity'
+require 'part2/question2/user/memory_model'
+require 'part2/question2/user/repository'
 
-describe Repositories::User do
-  let(:model) { Models::Memory::User }
-  let(:entity) { Entities::User }
+describe User::Repository do
+  let(:model) { User::Memory::Model }
+  let(:entity) { User::Entity }
 
   let(:organizations) { [1,2,3,4] }
 
@@ -85,6 +85,15 @@ describe Repositories::User do
       test_user = subject.create(user_options)
 
       subject.roles_for(test_user.id).should == test_user.roles
+    end
+
+    it 'returns the users for a given organization id' do
+      user1 = subject.create(user_options.merge(organizations: [1]))
+      user2 = subject.create(user_options.merge(organizations: [1]))
+      user3 = subject.create(user_options.merge(organizations: [2]))
+
+      subject.find_by_organization_id(1).should =~ [user1, user2]
+      subject.find_by_organization_id(1).should_not include user3
     end
   end
 

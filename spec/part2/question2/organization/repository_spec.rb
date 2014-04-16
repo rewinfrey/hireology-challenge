@@ -1,11 +1,11 @@
 require 'spec_helper'
-require 'part2/question2/entities/organization'
-require 'part2/question2/models/memory/organization'
-require 'part2/question2/repositories/organization'
+require 'part2/question2/organization/entity'
+require 'part2/question2/organization/memory_model'
+require 'part2/question2/organization/repository'
 
-describe Repositories::Organization do
-  let(:model) { Models::Memory::Organization }
-  let(:entity) { Entities::Organization }
+describe Organization::Repository do
+  let(:model) { Organization::Memory::Model }
+  let(:entity) { Organization::Entity }
 
   let(:org) do
     {

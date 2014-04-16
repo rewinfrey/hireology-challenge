@@ -1,5 +1,5 @@
-module Repositories
-  class Role
+module Role
+  class Repository
     class NoRecordError < StandardError; end
 
     def initialize(model, entity)

@@ -1,11 +1,11 @@
 require 'spec_helper'
-require 'part2/question2/entities/role'
-require 'part2/question2/models/memory/role'
-require 'part2/question2/repositories/role'
+require 'part2/question2/role/entity'
+require 'part2/question2/role/memory_model'
+require 'part2/question2/role/repository'
 
-describe Repositories::Role do
-  let(:model) { Models::Memory::Role }
-  let(:entity) { Entities::Role }
+describe Role::Repository do
+  let(:model) { Role::Memory::Model }
+  let(:entity) { Role::Entity }
 
   let(:role) do
     {

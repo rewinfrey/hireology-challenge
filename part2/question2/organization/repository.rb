@@ -1,5 +1,5 @@
-module Repositories
-  class Organization
+module Organization
+  class Repository
     class NoRecordError < StandardError; end
 
     def initialize(model, entity)
