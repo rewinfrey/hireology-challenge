@@ -1,5 +1,7 @@
 module Repositories
   class User
+    class NoRecordError < StandardError; end
+
     def initialize(model, entity)
       @model  = model
       @entity = entity
@@ -23,6 +25,8 @@ module Repositories
       with_entity(
         model.find_by_id(user_id)
       )
+    rescue
+      raise NoRecordError, "User with id: #{user_id} does not exist!"
     end
 
     def organizations_for(user_id)

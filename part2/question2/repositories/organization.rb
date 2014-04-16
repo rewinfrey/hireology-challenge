@@ -1,5 +1,7 @@
 module Repositories
   class Organization
+    class NoRecordError < StandardError; end
+
     def initialize(model, entity)
       @model  = model
       @entity = entity
@@ -27,6 +29,8 @@ module Repositories
       with_entity(
         model.find_by_id(org_id)
       )
+    rescue
+      raise NoRecordError, "Organization with id: #{org_id} does not exist!"
     end
 
     def children_for(org)

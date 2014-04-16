@@ -67,6 +67,10 @@ describe Repositories::Organization do
       subject.find_by_id(org1.id).should == org1
     end
 
+    it 'raises a no record error if the organization does not exist' do
+      expect { subject.find_by_id(nil) }.to raise_error described_class::NoRecordError
+    end
+
     it 'returns all the children for a given parent organization' do
       org1 = subject.create(org)
       child1 = subject.create(org.merge(parent_id: org1.id))

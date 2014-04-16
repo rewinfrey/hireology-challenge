@@ -71,6 +71,10 @@ describe Repositories::User do
       subject.find_by_id(test_user.id).should == test_user
     end
 
+    it 'raises a no record error if the user does not exist' do
+      expect { subject.find_by_id(nil) }.to raise_error described_class::NoRecordError
+    end
+
     it 'returns the organizations for a given user' do
       test_user = subject.create(user_options)
 
