@@ -1,11 +1,13 @@
 module Models
   module Memory
     class User
+      class UserAlreadyExistsError < StandardError; end
+
       class << self
         def create(user_data)
-          add_to_collection!(
-            user_from(user_data)
-          )
+          user_from(user_data).tap do |user|
+            add_to_collection!(user)
+          end
         end
 
         def delete!(user_id)
@@ -67,7 +69,11 @@ module Models
         end
 
         def add_to_collection!(user)
-          collection[user[:id]] = user
+          if collection[user[:id]].nil?
+            collection[user[:id]] = user
+          else
+            raise UserAlreadyExistsError, "The user with id: #{user[:id]} already exists!"
+          end
         end
 
         def user_from(user_data)
@@ -80,8 +86,12 @@ module Models
         end
 
         def next_id
-          return collection.size + 1 if collection.size == 0
+          return collection.size + 1 if collection_empty?
           collection.size
+        end
+
+        def collection_empty?
+          collection.size == 0
         end
       end
     end

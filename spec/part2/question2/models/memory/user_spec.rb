@@ -35,6 +35,12 @@ describe Models::Memory::User do
       test_user = subject.create(user.merge(organizations: org_ids))
       test_user[:organizations].should == org_ids
     end
+
+    it 'cannot create a user with an id that already exists' do
+      test_user = subject.create(user)
+
+      expect { subject.create(user.merge(id: test_user[:id])) }.to raise_error subject::UserAlreadyExistsError
+    end
   end
 
   context 'delete' do

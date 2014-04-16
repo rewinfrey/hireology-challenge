@@ -11,7 +11,7 @@ module Repositories
       )
     end
 
-    def delete(user)
+    def delete!(user)
       model.delete!(user.id)
     end
 
@@ -63,11 +63,7 @@ module Repositories
 
     private
 
-    attr_reader :model
-
-    def entity
-      Entities::User
-    end
+    attr_reader :model, :entity
 
     def with_entity(user)
       entity.new(user)

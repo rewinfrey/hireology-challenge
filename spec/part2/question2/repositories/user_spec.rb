@@ -49,7 +49,7 @@ describe Repositories::User do
     it 'deletes a user' do
       test_user = subject.create(user_options)
 
-      subject.delete(test_user)
+      subject.delete!(test_user)
 
       subject.all.size.should == 0
     end
