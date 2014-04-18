@@ -1,6 +1,7 @@
 module Role
   class Repository
-    class NoRecordError < StandardError; end
+    class InvalidRoleTypeError < StandardError; end
+    class RoleAlreadyExistsError < StandardError; end
 
     def initialize(model, entity)
       @model  = model
@@ -11,14 +12,28 @@ module Role
       with_entity(
         model.create(options)
       )
+    rescue model::InvalidRoleTypeError => e
+      raise InvalidRoleTypeError, e
+    rescue model::RoleAlreadyExistsError => e
+      raise RoleAlreadyExistsError, e
+    end
+
+    def update(role_id, role_type)
+      with_entity(
+        model.update(role_id, role_type)
+      )
+    rescue model::InvalidRoleTypeError => e
+      raise InvalidRoleTypeError, e
+    rescue model::RoleAlreadyExistsError => e
+      raise RoleAlreadyExistsError, e
     end
 
     def all
       model.all.map { |role| with_entity(role) }
     end
 
-    def delete!(role)
-      model.delete!(role.id)
+    def delete!(role_id)
+      model.delete!(role_id)
     end
 
     def delete_all!
@@ -30,7 +45,6 @@ module Role
         model.find_by_id(role_id)
       )
     rescue
-      raise NoRecordError, "Role with id: #{role_id} does not exist!"
     end
 
     def find_by_user_id(user_id)

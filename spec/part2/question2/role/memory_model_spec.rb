@@ -14,10 +14,6 @@ describe Role::Memory::Model do
     }
   end
 
-  before(:each) do
-    subject.delete_all!
-  end
-
   context 'create' do
     it 'creates a new role' do
       actual_role   = subject.create(role)
@@ -28,6 +24,27 @@ describe Role::Memory::Model do
 
     it 'errors when an invalid role type is created' do
       expect { subject.create(role.merge(type: "Invalid Role")) }.to raise_error subject::InvalidRoleTypeError
+    end
+
+    it 'errors when specified role id already exists' do
+      role1 = subject.create(role)
+      expect { subject.create(role.merge(id: role1[:id])) }.to raise_error subject::RoleAlreadyExistsError
+    end
+  end
+
+  context 'update' do
+    it 'updates a role with the given options' do
+      role1 = subject.create(role)
+
+      subject.update(role1[:id], "User")
+
+      role1[:type].should == "User"
+    end
+
+    it 'raises error when given an invalid type' do
+      role1 = subject.create(role)
+
+      expect { subject.update(role1[:id], "Invalid") }.to raise_error subject::InvalidRoleTypeError
     end
   end
 

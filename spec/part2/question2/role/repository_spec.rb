@@ -17,10 +17,6 @@ describe Role::Repository do
 
   subject { described_class.new(model, entity) }
 
-  before(:each) do
-    subject.delete_all!
-  end
-
   context 'create' do
     it 'creates a new role' do
       test_role = subject.create(role)
@@ -30,8 +26,13 @@ describe Role::Repository do
       test_role.organization_id.should == role[:organization_id]
     end
 
-    it 'raises an error if the role type is invalid' do
-      expect { subject.create(role.merge(type: "Invalid Type")) }.to raise_error model::InvalidRoleTypeError
+    it 'raises error if the role type is invalid' do
+      expect { subject.create(role.merge(type: "Invalid Type")) }.to raise_error described_class::InvalidRoleTypeError
+    end
+
+    it 'raises error if the specified id already exists' do
+      role1 = subject.create(role)
+      expect { subject.create(role.merge(id: role1.id)) }.to raise_error described_class::RoleAlreadyExistsError
     end
   end
 
@@ -41,6 +42,22 @@ describe Role::Repository do
       role2 = subject.create(role)
 
       subject.all.should =~ [role1, role2]
+    end
+  end
+
+  context 'update' do
+    it 'updates an existing role' do
+      role1 = subject.create(role.merge(type: "User"))
+
+      subject.update(role1.id, "Admin")
+
+      Factory.reload_role(role1).type.should == "Admin"
+    end
+
+    it 'raises an error if the type is invalid' do
+      role1 = subject.create(role)
+
+      expect { subject.update(role1, "Invalid") }.to raise_error described_class::InvalidRoleTypeError
     end
   end
 
@@ -57,7 +74,7 @@ describe Role::Repository do
     it 'deletes a specified role' do
       role1 = subject.create(role)
 
-      subject.delete!(role1)
+      subject.delete!(role1.id)
 
       subject.all.should_not include role1
     end
@@ -70,8 +87,8 @@ describe Role::Repository do
       subject.find_by_id(role1.id).should == role1
     end
 
-    it 'raises a no record error if the role does not exist' do
-      expect { subject.find_by_id(nil) }.to raise_error described_class::NoRecordError
+    it 'returns nil if the role does not exist' do
+      subject.find_by_id(nil).should be_nil
     end
 
     it 'returns all roles for a given user id' do
