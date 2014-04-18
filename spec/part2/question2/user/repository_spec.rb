@@ -7,21 +7,7 @@ describe User::Repository do
   let(:model) { User::Memory::Model }
   let(:entity) { User::Entity }
 
-  let(:organizations) { [1,2,3,4] }
-
-  let(:roles) { [1,2,3,4] }
-
-  let(:user_options) do
-    {
-      name: "Test User",
-      organizations: organizations,
-      roles: roles
-    }
-  end
-
-  before(:each) do
-    subject.delete_all!
-  end
+  let(:user_options) {{ name: "Test User" }}
 
   subject { described_class.new(model, entity) }
 
@@ -31,8 +17,7 @@ describe User::Repository do
 
       test_user.id.should_not be_nil
       test_user.name.should == "Test User"
-      test_user.organizations.should == organizations
-      test_user.roles.should == roles
+      test_user.roles.should be_empty
     end
   end
 
@@ -40,6 +25,8 @@ describe User::Repository do
     it 'deletes all users' do
       subject.create(user_options)
       subject.create(user_options)
+
+      subject.all.size.should == 2
 
       subject.delete_all!
 
@@ -49,7 +36,7 @@ describe User::Repository do
     it 'deletes a user' do
       test_user = subject.create(user_options)
 
-      subject.delete!(test_user)
+      subject.delete!(test_user.id)
 
       subject.all.size.should == 0
     end
@@ -71,14 +58,8 @@ describe User::Repository do
       subject.find_by_id(test_user.id).should == test_user
     end
 
-    it 'raises a no record error if the user does not exist' do
-      expect { subject.find_by_id(nil) }.to raise_error described_class::NoRecordError
-    end
-
-    it 'returns the organizations for a given user' do
-      test_user = subject.create(user_options)
-
-      subject.organizations_for(test_user.id).should == test_user.organizations
+    it 'returns nil if the user does not exist' do
+      subject.find_by_id(nil).should be_nil
     end
 
     it 'returns the roles for a given user' do
@@ -86,60 +67,27 @@ describe User::Repository do
 
       subject.roles_for(test_user.id).should == test_user.roles
     end
-
-    it 'returns the users for a given organization id' do
-      user1 = subject.create(user_options.merge(organizations: [1]))
-      user2 = subject.create(user_options.merge(organizations: [1]))
-      user3 = subject.create(user_options.merge(organizations: [2]))
-
-      subject.find_by_organization_id(1).should =~ [user1, user2]
-      subject.find_by_organization_id(1).should_not include user3
-    end
-  end
-
-  context 'organizations' do
-    it 'adds an organization for a given user' do
-      new_org_id = 5
-      test_user = subject.create(user_options)
-
-      test_user.organizations.should == [1,2,3,4]
-
-      updated_user = subject.add_organization(test_user.id, new_org_id)
-
-      updated_user.organizations.should == [1,2,3,4,5]
-    end
-
-    it 'removes an organization for a given user' do
-      test_user = subject.create(user_options)
-
-      test_user.organizations.should == [1,2,3,4]
-
-      updated_user = subject.remove_organization(test_user.id, 4)
-
-      updated_user.organizations.should == [1,2,3]
-    end
   end
 
   context 'roles' do
     it 'adds a role for a given user' do
-      new_role_id = 5
       test_user = subject.create(user_options)
 
-      test_user.roles.should == [1,2,3,4]
+      test_user.roles.should == []
 
-      updated_user = subject.add_role(test_user.id, new_role_id)
+      updated_user = subject.add_role(test_user.id, 1)
 
-      updated_user.roles.should == [1,2,3,4,5]
+      updated_user.roles.should == [1]
     end
 
     it 'removes a role for a given user' do
-      test_user = subject.create(user_options)
+      test_user = subject.create(user_options.merge(roles: [1]))
 
-      test_user.roles.should == [1,2,3,4]
+      test_user.roles.should == [1]
 
-      updated_user = subject.remove_role(test_user.id, 4)
+      updated_user = subject.remove_role(test_user.id, 1)
 
-      updated_user.roles.should == [1,2,3]
+      updated_user.roles.should be_empty
     end
   end
 end

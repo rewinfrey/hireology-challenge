@@ -2,7 +2,6 @@ module User
   class Entity < Struct.new(
                              :id,
                              :name,
-                             :organizations,
                              :roles
                            )
 

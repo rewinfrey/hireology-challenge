@@ -1,6 +1,5 @@
 module User
   class Repository
-    class NoRecordError < StandardError; end
 
     def initialize(model, entity)
       @model  = model
@@ -13,8 +12,8 @@ module User
       )
     end
 
-    def delete!(user)
-      model.delete!(user.id)
+    def delete!(user_id)
+      model.delete!(user_id)
     end
 
     def delete_all!
@@ -26,7 +25,6 @@ module User
         model.find_by_id(user_id)
       )
     rescue
-      raise NoRecordError, "User with id: #{user_id} does not exist!"
     end
 
     def find_by_organization_id(org_id)
@@ -45,9 +43,9 @@ module User
       model.all.map { |user| entity.new(user) }
     end
 
-    def add_organization(user_id, organization)
+    def add_organization(user_id, org_id)
       with_entity(
-        model.add_organization(user_id, organization)
+        model.add_organization(user_id, org_id)
       )
     end
 
@@ -57,9 +55,9 @@ module User
       )
     end
 
-    def add_role(user_id, role)
+    def add_role(user_id, role_id)
       with_entity(
-        model.add_role(user_id, role)
+        model.add_role(user_id, role_id)
       )
     end
 

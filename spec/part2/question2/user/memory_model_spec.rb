@@ -7,33 +7,24 @@ describe User::Memory::Model do
   let(:user) do
     {
       name: "Test User",
-      organizations: [],
       roles: []
     }
   end
 
-  before(:each) do
-    subject.all.each { |record| subject.delete!(record[:id]) }
-  end
-
   context 'create' do
     it 'creates a new user record' do
-      actual_user   = subject.create(user)
-      expected_user = subject.all.last
+      test_user = subject.create(user)
 
-      actual_user.should == expected_user
+      test_user[:id].should_not be_nil
+      test_user[:name].should == user[:name]
+      test_user[:roles].should be_empty
     end
 
     it 'creates a new user with a role' do
-      role_ids = [1]
-      test_user = subject.create(user.merge(roles: role_ids))
-      test_user[:roles].should == role_ids
-    end
+      roles = [1]
+      test_user = subject.create(user.merge(roles: roles))
 
-    it 'creates a new user with an organization' do
-      org_ids = [1]
-      test_user = subject.create(user.merge(organizations: org_ids))
-      test_user[:organizations].should == org_ids
+      test_user[:roles].should == roles
     end
 
     it 'cannot create a user with an id that already exists' do
@@ -48,7 +39,7 @@ describe User::Memory::Model do
       test_user = subject.create(user)
       subject.delete!(test_user[:id])
 
-      subject.all.should be_empty
+      subject.find_by_id(test_user[:id]).should be_nil
     end
 
     it 'deletes all existing records' do
@@ -56,7 +47,8 @@ describe User::Memory::Model do
       subject.create(user)
 
       subject.delete_all!
-      subject.all.size.should == 0
+
+      subject.all.should be_empty
     end
   end
 
@@ -87,47 +79,11 @@ describe User::Memory::Model do
       subject.find_by_id(test_user[:id]).should == test_user
     end
 
-    it 'finds organizations by user id' do
-      org_ids = [1]
-      test_user = subject.create(user.merge(organizations: org_ids))
-
-      subject.organizations_for(test_user[:id]).should == org_ids
-    end
-
     it 'finds roles by user id' do
       role_ids = [1]
       test_user = subject.create(user.merge(roles: role_ids))
 
       subject.roles_for(test_user[:id]).should == role_ids
-    end
-
-    it 'finds users by organization id' do
-      user1 = subject.create(user.merge(organizations: [1]))
-      user2 = subject.create(user.merge(organizations: [1]))
-      user3 = subject.create(user.merge(organizations: [2]))
-
-      subject.find_by_organization_id(1) =~ [user1, user2]
-      subject.find_by_organization_id(1).should_not include user3
-    end
-  end
-
-  context 'organizations' do
-
-    it 'adds an organization to a user' do
-      test_user = subject.create(user)
-      new_org_id = 1
-
-      subject.add_organization(test_user[:id], new_org_id)
-      test_user[:organizations].should == [new_org_id]
-    end
-
-    it 'removes an organization from a user' do
-      org_ids = [1]
-      test_user = subject.create(user.merge(organizations: org_ids))
-
-      subject.remove_organization(test_user[:id], org_ids.first)
-
-      test_user[:organizations].size.should == 0
     end
   end
 

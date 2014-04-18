@@ -22,14 +22,6 @@ module User
           collection[user_id]
         end
 
-        def find_by_organization_id(org_id)
-          all.select { |user| user[:organizations].include? org_id }
-        end
-
-        def organizations_for(user_id)
-          collection[user_id][:organizations]
-        end
-
         def roles_for(user_id)
           collection[user_id][:roles]
         end
@@ -38,22 +30,9 @@ module User
           collection.compact
         end
 
-        def add_organization(user_id, org_id)
-          find_by_id(user_id).tap do |user|
-            user[:organizations] << org_id
-            user
-          end
-        end
-
-        def remove_organization(user_id, remove_org_id)
-          find_by_id(user_id).tap do |user|
-            user[:organizations] = user[:organizations].reject { |org_id| org_id == remove_org_id }
-            user
-          end
-        end
-
         def add_role(user_id, role_id)
           find_by_id(user_id).tap do |user|
+            return if user.nil?
             user[:roles] << role_id
             user
           end
@@ -61,6 +40,7 @@ module User
 
         def remove_role(user_id, remove_role_id)
           find_by_id(user_id).tap do |user|
+            return if user.nil?
             user[:roles] = user[:roles].reject{ |role_id| role_id == remove_role_id }
             user
           end
@@ -84,7 +64,6 @@ module User
           {
             id: user_data.fetch(:id, next_id),
             name: user_data.fetch(:name, nil),
-            organizations: user_data.fetch(:organizations, []),
             roles: user_data.fetch(:roles, [])
           }
         end
