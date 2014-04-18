@@ -1,22 +1,17 @@
 require 'part2/question2/organization/repository'
 require 'part2/question2/organization/entity'
 require 'part2/question2/organization/memory_model'
-require 'part2/question2/organization/contexts/add_organization'
-require 'part2/question2/role/role'
-require 'part2/question2/user/user'
+require 'part2/question2/organization/contexts/create_organization'
+require 'part2/question2/organization/contexts/remove_organization'
 
 module Organization
   class << self
-    def add_organization
-      AddOrganization.new(repo)
+    def create_organization
+      CreateOrganization.new(repo)
     end
 
     def remove_organization
-      RemoveOrganization.new(
-        repo,
-        role_repo,
-        user_repo
-      )
+      RemoveOrganization.new(repo)
     end
 
     def repo
@@ -29,22 +24,6 @@ module Organization
 
     def entity
       Entity
-    end
-
-    def user_repo
-      user.repo
-    end
-
-    def role_repo
-      role.repo
-    end
-
-    def user
-      User
-    end
-
-    def role
-      Role
     end
   end
 end

@@ -3,6 +3,7 @@ module Organization
     class Model
       class ChildCannotBeParentError < StandardError; end
       class OrganizationAlreadyExistsError < StandardError; end
+      class ParentRecordNotFoundError < StandardError; end
 
       class << self
 
@@ -28,6 +29,7 @@ module Organization
 
         def find_by_id(org_id)
           collection[org_id]
+        rescue
         end
 
         def children_for(org_id)
@@ -61,11 +63,13 @@ module Organization
         def add_as_child(org)
           find_by_id(org[:parent_id]).tap do |parent|
             if parent?(parent)
-              parent[:children] << org[:id]
+              add_child_to_parent(parent, org) if parent?(parent)
             else
               raise ChildCannotBeParentError, "A child organization cannot have children!"
             end
           end
+        rescue NoMethodError
+          raise ParentRecordNotFoundError, "Parent record with id: #{org[:parent_id]} cannot be found!"
         end
 
         def parent?(parent)
@@ -81,11 +85,8 @@ module Organization
           end
         end
 
-        def add_child_org_to_parent(org_id, child_org_id)
-          find_by_id(org_id).tap do |org|
-            org[:children] << child_org_id
-            org
-          end
+        def add_child_to_parent(parent, child)
+          parent[:children] << child[:id]
         end
 
         def purge_from_parent!(org)

@@ -15,10 +15,6 @@ describe Organization::Repository do
 
   subject { described_class.new(model, entity) }
 
-  before(:each) do
-    subject.delete_all!
-  end
-
   context 'create' do
     it 'creates a new organization' do
       org1 = subject.create(org)
@@ -27,6 +23,23 @@ describe Organization::Repository do
       org1.name.should == org[:name]
       org1.parent_id.should_not be_nil
       org1.children.should == []
+    end
+
+    it 'raises error if new org specifies a parent that does not exist' do
+      expect { subject.create(org.merge(parent_id: "invalid id")) }.to raise_error Organization::Repository::ParentRecordNotFoundError
+    end
+
+    it 'raises error if new org specifies an id that already exists' do
+      org1 = subject.create(org)
+
+      expect { subject.create(org.merge(id: org1.id)) }.to raise_error Organization::Repository::OrganizationAlreadyExistsError
+    end
+
+    it 'raises error if new org specifies a parent that is a child' do
+      parent = subject.create(org)
+      child  = subject.create(org.merge(parent_id: parent.id))
+
+      expect { subject.create(org.merge(parent_id: child.id)) }.to raise_error Organization::Repository::ChildCannotBeParentError
     end
   end
 
@@ -54,7 +67,7 @@ describe Organization::Repository do
     it 'deletes an organization' do
       org1 = subject.create(org)
 
-      subject.delete!(org1)
+      subject.delete!(org1.id)
 
       subject.all.should_not include org1
     end
@@ -68,7 +81,7 @@ describe Organization::Repository do
     end
 
     it 'raises a no record error if the organization does not exist' do
-      expect { subject.find_by_id(nil) }.to raise_error described_class::NoRecordError
+      expect { subject.find_by_id(nil) }.to raise_error Organization::Repository::NoRecordError
     end
 
     it 'returns all the children for a given parent organization' do

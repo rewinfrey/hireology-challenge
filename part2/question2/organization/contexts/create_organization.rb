@@ -1,5 +1,5 @@
 module Organization
-  class AddOrganization
+  class CreateOrganization
     def initialize(repo)
       @repo = repo
     end

@@ -8,11 +8,6 @@ describe Organization::Memory::Model do
 
   let(:child) {{ name: "Child Organization" }}
 
-  before(:each) do
-    subject.delete_all!
-    subject.root[:children] = []
-  end
-
   context 'create' do
     it 'creates a new organization' do
       test_org = subject.create(org)
@@ -62,6 +57,10 @@ describe Organization::Memory::Model do
     it 'cannot create an organization with an id that already exists' do
       test_org = subject.create(org)
       expect { subject.create(org.merge(id: test_org[:id])) }.to raise_error subject::OrganizationAlreadyExistsError
+    end
+
+    it 'cannot create an organization whose specified parent id does not exist' do
+      expect { subject.create(org.merge(parent_id: "invalid id")) }.to raise_error subject::ParentRecordNotFoundError
     end
   end
 

@@ -1,6 +1,9 @@
 module Organization
   class Repository
     class NoRecordError < StandardError; end
+    class ParentRecordNotFoundError < StandardError; end
+    class OrganizationAlreadyExistsError < StandardError; end
+    class ChildCannotBeParentError < StandardError; end
 
     def initialize(model, entity)
       @model  = model
@@ -11,10 +14,16 @@ module Organization
       with_entity(
         model.create(options)
       )
+    rescue model::ParentRecordNotFoundError => e
+      raise ParentRecordNotFoundError, e.message
+    rescue model::OrganizationAlreadyExistsError => e
+      raise OrganizationAlreadyExistsError, e.message
+    rescue model::ChildCannotBeParentError => e
+      raise ChildCannotBeParentError, e.message
     end
 
-    def delete!(org)
-      model.delete!(org.id)
+    def delete!(org_id)
+      model.delete!(org_id)
     end
 
     def delete_all!
