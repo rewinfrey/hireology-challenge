@@ -2,7 +2,9 @@
 
 There is a lot to be improved in this controller action. My guess is the person who wrote this code comes from a strong procedural language background, and may not be comfortable with the idea of objects. The only classes used in this controller action are models.
 
-The first thing I would suggest is to extract methods and replace snippits of code with meaningful names. In its current form, this code does not do a good job of revealing intent. Extracting methods that reveals intent would be a great start to gain clarity on the various concerns in this one controller action.
+The first is looking at the specs that exist. My guess, based on the style of this code, is that tests don't exist. In this scenario, I absolutely will not change existing code without having verification specs. To generate the verification specs, I would want to have some basic ideas about the domain clarified by the product owner if possible. I would then setup requests that allow me to trigger each conditional branch in the logic flow. Only after I am certain that I have accounted for each conditional branch, I would then start refactoring.
+
+Given that I now have specs, the first thing I would suggest is to extract methods and replace snippits of code with meaningful names. In its current form, this code does not do a good job of revealing intent. I think extracting methods that reveal intent would be a good first step in identifying the various concerns of this controller action.
 
        if current_user.has_permission?('view_candidates')
           if s_key == "All Candidates"
@@ -81,28 +83,29 @@ This large chunk of logic:
 
 I think this is extremely hard to follow because of the nested `unless` statements and its size. It's also very difficult to groc intent. Not having any domain knowledge about this application, I cannot easily understand from the code the significance of what it means for a candidate to be deleted, or what it means for a candidate to be found.
 
-To get a hopefully clearer idea of what is happening, I would look at the specs. If there are no specs (and I suspect with code like this that there probably aren't any specs), I would do some browser testing and record results. I would use something like `pry` to capture the `@canditates` variable and use that value as a baseline for establishing verification specs. I would experiment with how to trigger both the `then` and the `else` portions of the main conditional, so that I can establish base lines for both branches. Once I feel confident that I have verification tests in place, I would first extract the chunks of logic I identify as objects into their own methods. Below is an example:
+In order to help make more sense of the general logic flow, I would split the main `if / then` conditional in as clean a separation as possible:
 
     class SomeController < ApplicationController
         def show_candidates
 
-        @open_jobs = Job.all_open_new(current_user.organization)
+          @open_jobs = Job.all_open_new(current_user.organization)
 
-        if current_user.has_permission?('view_candidates')
-            @candidates = order_for_sort(sort)
-        else
-            @candidates = find_by_jobs
-            if sort == "Candidates Newest -> Oldest"
-                @candidates = @candidates.sort_by { |c| c.created_at }
-                elsif sort == "Candidates Oldest -> Newest"
-                @candidates = @candidates.sort_by { |c| c.created_at }.reverse
-                elsif sort == "Candidates A -> Z"
-                @candidates = @candidates.sort_by { |c| c.created_at }.sort! { |a, b| a.last_name <=> b.last_name }
-                elsif sort == "Candidates Z -> A"
-                @candidates = @candidates.sort_by { |c| c.created_at }.sort! { |a, b| a.last_name <=> b.last_name }.reverse
-            end
+          if current_user.has_permission?('view_candidates')
+              @candidates = order_for_sort(sort)
+          else
+              @candidates = find_by_jobs
+              if sort == "Candidates Newest -> Oldest"
+                  @candidates = @candidates.sort_by { |c| c.created_at }
+                  elsif sort == "Candidates Oldest -> Newest"
+                  @candidates = @candidates.sort_by { |c| c.created_at }.reverse
+                  elsif sort == "Candidates A -> Z"
+                  @candidates = @candidates.sort_by { |c| c.created_at }.sort! { |a, b| a.last_name <=> b.last_name }
+                  elsif sort == "Candidates Z -> A"
+                  @candidates = @candidates.sort_by { |c| c.created_at }.sort! { |a, b| a.last_name <=> b.last_name }.reverse
+              end
+          end
+          render :partial => "candidates_list", :locals => { :@candidates => @candidates, :open_jobs => @open_jobs }, :layout => false
         end
-        render :partial => "candidates_list", :locals => { :@candidates => @candidates, :open_jobs => @open_jobs }, :layout => false
     end
 
     def sort
@@ -156,21 +159,26 @@ To get a hopefully clearer idea of what is happening, I would look at the specs.
         end
     end
 
-
-This is only a start, but what troubles me immediately is that the sorting logic for candidates is different depending on which branch of the main `if / else` conditional we land in. Next I would start to unpack the contents of `find_by_jobs`. I would look for pieces of logic that can be better named, so I can also gain a better understanding of what they are doing. Like this example:
+Now I can focus just on the `find_by_jobs` portion of the code. Immediately I'm struck the apparent similarity in sorting logic that is slightly different for the two main logical branches. I'm not sure at this point what the best way to proceed is in rectifying that issue, so I'll instead focus on the logic of the `find_by_jobs` method itself. I notice there is a long boolean expression that looks like a good candidate for an extract method refactor:
 
      if candidate.is_deleted == false && candidate.is_completed == true && candidate.organization_id == current_user.organization_id
 
-Based on the name of the action, and the permissions check at the beginning of this action, I think a simple `viewable?` boolean check to encapsulate this logic make sense (from what I understand at the time of writing), like this:
+Based on the name of the controller action, and the permissions check at the beginning of this action, I think a simple `viewable?` boolean check to encapsulate this logic make sense (from what I understand at the time of writing), that would allow me to push this logic down into its own method:
 
     def viewable?(candidate)
         candidate.is_deleted == false &&
             candidate.is_completed == true &&
                 candidate.organization_id == current_user.organization_id &&
-                    !@candidates.any? { |cand| cand.email_address == candidate.email_address }
+                    !already_in_candidates?(candidate)
     end
 
-Even though that is pretty gross, it gets us to this:
+    def already_in_candidates?(candidate)
+      @candidates.any? { |cand| cand.email_address == candidate.email_address }
+    end
+
+I've also added in the check to determine if the current candidate already exists in the collection by creating a new method `already_in_candidates?`.
+
+Even though that is pretty gross, and offers the possibility of a refactor, I want to keep the focus on `find_by_jobs`. So far our efforts get us to this:
 
            jobs.each do |job|
                 unless job.blank?
@@ -191,7 +199,7 @@ Even though that is pretty gross, it gets us to this:
                 end
             end
 
-But now this helps expose some unnecessary control flow that can be removed:
+This helps expose some unnecessary control flow that can be removed (and we get to remove a local variable):
 
            jobs.each do |job|
                 unless job.blank?
@@ -204,7 +212,6 @@ But now this helps expose some unnecessary control flow that can be removed:
                     end
                 end
             end
-
 
 A little more clean up around the unless statements may help too:
 
@@ -228,5 +235,4 @@ Given this amount of reduction, I think there might be a context that can be ext
             candidates
         end
 
-Considering what we started with, this is certainly a little less difficult to work with, however I would not feel comfortable doing this type of refactor without a a set of verification specs to ensure each step is safely taken without introducing a regression bug. Assuming that my verification specs are green, I would continue on with the other object extraction candidates from earlier in this process, and break them apart into smaller chunks. The main goal for me is to not have code that is pretty, although that is nice, but instead is to have code that is easy to read and understand without needing to spend extra time asking what and why.
-
+Considering what we started with, this is certainly a little less difficult to work with, but there would still be a good deal of work required. However, having a set of verification specs to ensure each refactor step is safely taken makes this process fun and helps me remain confident that I am not introducing a regression bug. Assuming that my verification specs are green, I would continue on with the other object extraction candidates from earlier in this process, and break them apart into smaller chunks. The main goal for me is to not have code that is pretty, although that is nice, but instead to have code that is easy to read and understand without needing to spend extra time asking what and why.

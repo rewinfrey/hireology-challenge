@@ -19,13 +19,13 @@ Contained in this repo are my solutions to the homework problems provided by Att
 
 All code was fully TDD'ed. I prefer keeping my commits small and granular, but they grew larger towards the end of completing `part2/question2` as I was completing large logical "chunks" of the kata. Because it was straightforward enough to persist objects in memory I used a [classical](http://martinfowler.com/articles/mocksArentStubs.html#ClassicalAndMockistTesting) approach. However, no database backend or configuration is required.
 
-Apart for wanting to do my best and show what I think of as clean, SOLID code, I also wanted to provide the team with a working example of the [Repository Pattern](http://blog.8thlight.com/mike-ebert/2013/03/23/the-repository-pattern.html) along with [Entities](http://blog.8thlight.com/uncle-bob/2012/08/13/the-clean-architecture.html) and [Use Cases](http://blog.8thlight.com/uncle-bob/2012/08/13/the-clean-architecture.html) which I call `contexts`. I've also borrowed and adapted the idea of a [Service Layer](http://martinfowler.com/eaaCatalog/serviceLayer.html) that coordinates the dependencies of the `contexts` and provides a simple interface for consuming those `contexts`.
+Apart from wanting to do my best and show what I think of as clean, SOLID code, I also wanted to provide the team with a working example of the [Repository Pattern](http://blog.8thlight.com/mike-ebert/2013/03/23/the-repository-pattern.html) along with [Entities](http://blog.8thlight.com/uncle-bob/2012/08/13/the-clean-architecture.html) and [Use Cases](http://blog.8thlight.com/uncle-bob/2012/08/13/the-clean-architecture.html) which I call `contexts`. I've also borrowed and adapted the idea of a [Service Layer](http://martinfowler.com/eaaCatalog/serviceLayer.html) that coordinates the dependencies of the `contexts` and provides a simple interface for consuming those `contexts`.
 
 I tend to prefer one method classes that respond to either `call` or `execute`. I've also adopted the idea of [Interactors](http://www.infoq.com/news/2013/07/architecture_intent_frameworks) which wire together `contexts` across the main concerns of `role`, `organization` and `user`. I think this is probably a bit contrived for this kata, but wanted to share it with the team as I have found it to be a helpful way of orienting my thinking when working on large application code bases.
 
 ### Run The Tests!
 
-    $ git clone
+    $ git clone git@github.com:rewinfrey/homework.git
     $ cd homework
     $ bundle
     $ rake
