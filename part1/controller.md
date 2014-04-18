@@ -2,7 +2,7 @@
 
 There is a lot to be improved in this controller action. My guess is the person who wrote this code comes from a strong procedural language background, and may not be comfortable with the idea of objects. The only classes used in this controller action are models.
 
-The first is looking at the specs that exist. My guess, based on the style of this code, is that tests don't exist. In this scenario, I absolutely will not change existing code without having verification specs. To generate the verification specs, I would want to have some basic ideas about the domain clarified by the product owner if possible. I would then setup requests that allow me to trigger each conditional branch in the logic flow. Only after I am certain that I have accounted for each conditional branch, I would then start refactoring.
+The first step is looking at the specs that exist. My guess, based on the style of this code, is that tests don't exist. In this scenario, I absolutely will not change existing code without having verification specs. To generate the verification specs, I would want to have some basic ideas about the domain clarified by the product owner if possible. I would then setup requests that allow me to trigger each conditional branch in the logic flow. Only after I am certain that I have accounted for each conditional branch, I would then start refactoring.
 
 Given that I now have specs, the first thing I would suggest is to extract methods and replace snippits of code with meaningful names. In its current form, this code does not do a good job of revealing intent. I think extracting methods that reveal intent would be a good first step in identifying the various concerns of this controller action.
 
@@ -36,7 +36,9 @@ The code above is also mostly duplicated in the code below:
 
 This logic would make for an easy extraction into an object to determine the sorting of the candidates. However, there is some unfortunate Law of Demeter violations happening via the current user's organization's assocation with candidates. The use of `all` is troubling, as that represents potentially a very large query, rather than using scopes or where clauses to issue better optimized SQL queries.
 
-This large chunk of logic:
+Although we've already identified a potential candidate for an extract object refactor, and potential for optimizing SQL queries, I'd like to tackle the gnarliest part of the code first.
+
+Let's take a look at this large chunk of logic:
 
     else
       @job_contacts = JobContact.all(:user_id => current_user.id)
@@ -81,9 +83,9 @@ This large chunk of logic:
         end
       end
 
-I think this is extremely hard to follow because of the nested `unless` statements and its size. It's also very difficult to groc intent. Not having any domain knowledge about this application, I cannot easily understand from the code the significance of what it means for a candidate to be deleted, or what it means for a candidate to be found.
+I think this is extremely hard to follow because of the nested `unless` statements and its size. It's also very difficult to understand intent. Not having any domain knowledge about this application, I cannot easily understand from the code the significance of what it means for a candidate to be deleted, or what it means for a candidate to be found.
 
-In order to help make more sense of the general logic flow, I would split the main `if / then` conditional in as clean a separation as possible:
+I want to focus on this chunk of logic, which happens to be the else branch of the main if conditional in this action. First though, I want to separate the main `then / else` branches into their own methods. I find this helps me focus better without being overwhelmed by the context, like this:
 
     class SomeController < ApplicationController
         def show_candidates
@@ -159,7 +161,7 @@ In order to help make more sense of the general logic flow, I would split the ma
         end
     end
 
-Now I can focus just on the `find_by_jobs` portion of the code. Immediately I'm struck the apparent similarity in sorting logic that is slightly different for the two main logical branches. I'm not sure at this point what the best way to proceed is in rectifying that issue, so I'll instead focus on the logic of the `find_by_jobs` method itself. I notice there is a long boolean expression that looks like a good candidate for an extract method refactor:
+Now I can focus just on the `find_by_jobs` portion of the code. Right away I notice there is a long boolean expression that looks like a good candidate for an extract method refactor:
 
      if candidate.is_deleted == false && candidate.is_completed == true && candidate.organization_id == current_user.organization_id
 
@@ -176,9 +178,9 @@ Based on the name of the controller action, and the permissions check at the beg
       @candidates.any? { |cand| cand.email_address == candidate.email_address }
     end
 
-I've also added in the check to determine if the current candidate already exists in the collection by creating a new method `already_in_candidates?`.
+I've also added in the check to determine if the current candidate already exists in the collection by creating a new method `already_in_candidates?`, which accounts for the last `unless` condition in the original code.
 
-Even though that is pretty gross, and offers the possibility of a refactor, I want to keep the focus on `find_by_jobs`. So far our efforts get us to this:
+Even though this large boolean expression is pretty gross, it does help `find_by_jobs` become more expressive. So far our efforts get us to this:
 
            jobs.each do |job|
                 unless job.blank?
